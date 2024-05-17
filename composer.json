@@ -6,6 +6,9 @@
             "Nexxtmove\\AI\\": "src/"
         }
     },
+    "require": {
+        "illuminate/support": ">=6.0"
+    },
     "require-dev": {
         "pestphp/pest": "^2.34"
     },
