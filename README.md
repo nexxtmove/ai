@@ -1,4 +1,5 @@
-# The simplest way to use AI in your Laravel app
+# ai
+The simplest way to use AI in your Laravel app
 
 ```php
 $fruits = AI::ask('Give me a JSON array with three fruits');
