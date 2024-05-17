@@ -1,0 +1,17 @@
+{
+    "name": "nexxtmove/ai",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Nexxtmove\\AI\\": "src/"
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.34"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
