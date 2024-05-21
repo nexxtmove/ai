@@ -23,7 +23,7 @@ class Gemini implements AIDriver
             'contents' => [
                 [
                     'parts' => [
-                        ['role' => 'user', 'text' => $prompt],
+                        ['text' => $prompt],
                     ],
                 ],
             ],
