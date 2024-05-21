@@ -10,7 +10,7 @@ class AICommand extends Command
 
     public function handle()
     {
-        $prompt = $this->argument('job');
+        $prompt = $this->argument('prompt');
 
         $response = AI::ask($prompt);
 
