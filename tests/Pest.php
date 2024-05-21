@@ -1,5 +1,3 @@
 <?php
 
-use Orchestra\Testbench\TestCase;
-
-uses(TestCase::class)->in('.');
+uses(Nexxtmove\Tests\TestCase::class)->in('.');

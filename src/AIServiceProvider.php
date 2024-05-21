@@ -3,16 +3,17 @@
 namespace Nexxtmove;
 
 use Illuminate\Support\ServiceProvider;
+use Nexxtmove\Drivers\AIDriver;
 
-class FractalServiceProvider extends ServiceProvider
+class AIServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->alias('ai', AIIntegration::class);
-
         $this->mergeConfigFrom(
             __DIR__.'/../config/ai.php',
             'ai'
         );
+
+        $this->app->bind(AIDriver::class, config('ai.driver'));
     }
 }

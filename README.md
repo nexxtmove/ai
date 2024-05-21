@@ -1,4 +1,4 @@
-# ai
+# Laravel AI
 The simplest way to use AI in your Laravel app
 
 ```php
