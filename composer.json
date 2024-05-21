@@ -26,6 +26,16 @@
             "pestphp/pest-plugin": true
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nexxtmove\\AIServiceProvider"
+            ],
+            "aliases": {
+                "AI": "Nexxtmove\\AI"
+            }
+        }
+    },
     "scripts": {
         "test": "pest",
         "lint": "pint"
