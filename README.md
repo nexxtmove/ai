@@ -23,5 +23,5 @@ use Nexxtmove\AI;
 $summary = AI::ask("Summarize this article: {$article}");
 ```
 
-### That's it! Easy, right?
+### That's it!
 Want to read more? [Check out the guide](GUIDE.md).
