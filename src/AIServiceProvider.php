@@ -4,7 +4,6 @@ namespace Nexxtmove;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
-use Nexxtmove\Common\Commands\AICommand;
 use Nexxtmove\Drivers\AIDriver;
 use Nexxtmove\Drivers\Gemini;
 use Nexxtmove\Drivers\OpenAI;

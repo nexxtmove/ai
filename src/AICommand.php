@@ -1,9 +1,8 @@
 <?php
 
-namespace Nexxtmove\Common\Commands;
+namespace Nexxtmove;
 
 use Illuminate\Console\Command;
-use Nexxtmove\AI;
 
 class AICommand extends Command
 {
