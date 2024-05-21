@@ -17,18 +17,17 @@ class Gemini implements AIDriver
     public function ask(string $prompt): ?string
     {
         $model = config('ai.model') ?: 'gemini-pro';
+        $key = config('ai.gemini.api_key');
 
-        $response = $this->http
-            ->withQueryParameters(['key' => config('ai.gemini.api_key')])
-            ->post('models/'.$model.':generateContent', [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['role' => 'user', 'text' => $prompt],
-                        ],
+        $response = $this->http->post("models/{$model}:generateContent?key={$key}", [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['role' => 'user', 'text' => $prompt],
                     ],
                 ],
-            ]);
+            ],
+        ]);
 
         return $response->json('candidates.0.content.parts.0.text');
     }
