@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'driver' => Nexxtmove\Drivers\OpenAI::class,
+    'driver' => env('AI_DRIVER', 'openai'),
+    'model' => env('AI_MODEL'),
 
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),

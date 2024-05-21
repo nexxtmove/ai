@@ -13,7 +13,8 @@ test('ask calls OpenAI API', function () {
     $openai->ask('How are you?');
 
     Http::assertSent(function (Request $request) {
-        return $request->url() === 'https://api.openai.com/v1/chat/completions';
+        return $request->url() === 'https://api.openai.com/v1/chat/completions'
+            && $request['model'] === 'gpt-3.5-turbo';
     });
 });
 
@@ -40,6 +41,20 @@ test('uses OpenAI key', function () {
 
     Http::assertSent(function (Request $request) {
         return $request->hasHeader('Authorization', 'Bearer sk-abc');
+    });
+});
+
+test('uses correct model', function () {
+    Http::fake();
+
+    Config::set('ai.model', 'gpt-4o');
+
+    $openai = new OpenAI();
+
+    $openai->ask('How are you?');
+
+    Http::assertSent(function (Request $request) {
+        return $request['model'] === 'gpt-4o';
     });
 });
 

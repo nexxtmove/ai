@@ -17,8 +17,10 @@ class OpenAI implements AIDriver
 
     public function ask(string $prompt): ?string
     {
+        $model = config('ai.model') ?: 'gpt-3.5-turbo';
+
         $response = $this->http->post('chat/completions', [
-            'model' => 'gpt-3.5-turbo',
+            'model' => $model,
             'messages' => [
                 ['role' => 'user', 'content' => $prompt],
             ],

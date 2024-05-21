@@ -1,17 +1,18 @@
 # Laravel AI
-The simplest way to use AI in your Laravel app
+The simplest way to add AI to your Laravel app, using OpenAI or Gemini.
 
 ```php
 $fruits = AI::ask('Give me a JSON array with three fruits');
 ```
 
 ### 1. Install
-```
+```bash
 composer require nexxtmove/ai
 ```
 
-### 2. Add your OpenAI API key to `.env`
-```
+### 2. Add your API key to `.env`
+```bash
+AI_DRIVER=openai
 OPENAI_API_KEY=sk-...
 ```
 
@@ -23,4 +24,4 @@ $summary = AI::ask("Summarize this article: {$article}");
 ```
 
 ### That's it! Easy, right?
-Want to configure a bit more? Read this guide.
+Want to read more? [Check out the guide](GUIDE.md).
