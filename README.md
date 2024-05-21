@@ -1,4 +1,4 @@
-# Laravel AI
+# <img src="https://raw.githubusercontent.com/nexxtmove/ai/logo/icon.svg" alt="Nexxtmove" height="20"> Laravel AI
 The simplest way to add AI to your Laravel app, using OpenAI or Gemini.
 
 ```php
