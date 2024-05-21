@@ -29,6 +29,8 @@ class Gemini implements AIDriver
             ],
         ]);
 
+        $response->throw();
+
         return $response->json('candidates.0.content.parts.0.text');
     }
 }

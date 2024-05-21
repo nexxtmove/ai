@@ -26,6 +26,8 @@ class OpenAI implements AIDriver
             ],
         ]);
 
+        $response->throw();
+
         return $response->json('choices.0.message.content');
     }
 }

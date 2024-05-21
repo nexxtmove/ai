@@ -80,14 +80,17 @@ test('returns response from api', function () {
     expect($response)->toBe('I am fine, thank you!');
 });
 
-test('returns null if api call fails', function () {
+test('throws exception if api call fails', function () {
     Http::fake([
-        'api.openai.com/v1/chat/completions' => Http::response([], 400),
+        'api.openai.com/v1/chat/completions' => Http::response([
+            'error' => [
+                'code' => 400,
+                'message' => 'API key expired. Please renew the API key.',
+            ],
+        ], 400),
     ]);
 
     $openai = new OpenAI();
 
-    $response = $openai->ask('How are you?');
-
-    expect($response)->toBeNull();
-});
+    $openai->ask('How are you?');
+})->throws('API key expired.');

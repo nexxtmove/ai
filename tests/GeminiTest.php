@@ -82,14 +82,17 @@ test('returns response from api', function () {
     expect($response)->toBe('I am fine, thank you!');
 });
 
-test('returns null if api call fails', function () {
+test('throws exception if api call fails', function () {
     Http::fake([
-        'generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent*' => Http::response([], 400),
+        'generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent*' => Http::response([
+            'error' => [
+                'code' => 400,
+                'message' => 'API key expired. Please renew the API key.',
+            ],
+        ], 400),
     ]);
 
     $gemini = new Gemini();
 
-    $response = $gemini->ask('How are you?');
-
-    expect($response)->toBeNull();
-});
+    $gemini->ask('How are you?');
+})->throws('API key expired.');
