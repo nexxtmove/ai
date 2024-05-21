@@ -4,6 +4,7 @@ namespace Nexxtmove;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Nexxtmove\Common\Commands\AICommand;
 use Nexxtmove\Drivers\AIDriver;
 use Nexxtmove\Drivers\Gemini;
 use Nexxtmove\Drivers\OpenAI;
@@ -22,5 +23,12 @@ class AIServiceProvider extends ServiceProvider
 
             return $app->make($driver);
         });
+    }
+
+    public function boot(): void
+    {
+        $this->commands([
+            AICommand::class,
+        ]);
     }
 }
