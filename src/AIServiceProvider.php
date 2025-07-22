@@ -5,7 +5,6 @@ namespace Nexxtmove;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Nexxtmove\Drivers\AIDriver;
-use Nexxtmove\Drivers\Gemini;
 use Nexxtmove\Drivers\OpenAI;
 
 class AIServiceProvider extends ServiceProvider
@@ -17,17 +16,9 @@ class AIServiceProvider extends ServiceProvider
         $this->app->bind(AIDriver::class, function (Application $app) {
             $driver = match (config('ai.driver')) {
                 'openai' => OpenAI::class,
-                'gemini' => Gemini::class,
             };
 
             return $app->make($driver);
         });
-    }
-
-    public function boot(): void
-    {
-        $this->commands([
-            AICommand::class,
-        ]);
     }
 }

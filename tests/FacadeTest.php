@@ -16,11 +16,11 @@ test('Facade works', function () {
 });
 
 test('Facade uses the correct driver', function () {
-    Config::set('ai.driver', 'gemini');
+    Config::set('ai.driver', 'openai');
 
     AI::ask('How are you?');
 
     Http::assertSent(function (Request $request) {
-        return str_contains($request->url(), 'google');
+        return str_contains($request->url(), 'openai');
     });
 });
