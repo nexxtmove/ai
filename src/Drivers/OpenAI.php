@@ -56,8 +56,11 @@ class OpenAI extends AIDriver
             $data = [
                 'model' => $model,
                 'input' => $messages,
-                'tools' => array_map(fn(Tool $tool) => $this->formatTool($tool), $tools),
             ];
+
+            if (!empty($tools)) {
+                $data['tools'] = array_map(fn(Tool $tool) => $this->formatTool($tool), $tools);
+            }
 
             if (isset($options['output_schema'])) {
                 $data['text'] = [
@@ -68,6 +71,10 @@ class OpenAI extends AIDriver
                         'strict' => true,
                     ]
                 ];
+            }
+
+            if (isset($options['instructions'])) {
+                $data['instructions'] = $options['instructions'];
             }
 
             $response = $this->http->post('responses', $data);
