@@ -10,7 +10,7 @@ abstract class AIDriver
      * @param string $prompt
      * @param array{model: string, tools: Tool[]} $options
      */
-    abstract public function ask(string $prompt, array $options = []): string;
+    abstract public function ask(string $prompt, array $options = []): string|array;
 
     abstract protected function formatTool(Tool $tool): array;
 

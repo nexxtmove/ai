@@ -39,7 +39,7 @@ class OpenAI extends AIDriver
         ];
     }
 
-    public function ask(string $prompt, array $options = []): string
+    public function ask(string $prompt, array $options = []): string|array
     {
         $model = $options['model'] ?? config('ai.openai.default_model');
         $tools = $options['tools'] ?? [];
@@ -58,6 +58,17 @@ class OpenAI extends AIDriver
                 'input' => $messages,
                 'tools' => array_map(fn(Tool $tool) => $this->formatTool($tool), $tools),
             ];
+
+            if (isset($options['output_schema'])) {
+                $data['text'] = [
+                    'format' => [
+                        'type' => 'json_schema',
+                        'name' => 'output_schema',
+                        'schema' => $options['output_schema'],
+                        'strict' => true,
+                    ]
+                ];
+            }
 
             $response = $this->http->post('responses', $data);
 
@@ -81,7 +92,13 @@ class OpenAI extends AIDriver
                 continue;
             }
 
-            return $responseData['output'][0]['content'][0]['text'];
+            $result = $responseData['output'][0]['content'][0]['text'];
+
+            if (isset($options['output_schema'])) {
+                $result = json_decode($result, true);
+            }
+
+            return $result;
         }
     }
 }
