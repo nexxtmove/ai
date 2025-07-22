@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Nexxtmove\\": "src/"
+            "Nexxtmove\\AI\\": "src/"
         }
     },
     "autoload-dev": {

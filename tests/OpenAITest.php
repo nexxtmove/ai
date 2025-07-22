@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Nexxtmove\Drivers\OpenAI;
+use Nexxtmove\AI\Drivers\OpenAI;
+use Nexxtmove\AI\Schema;
+use Nexxtmove\AI\Tool;
 
 test('ask calls OpenAI API', function () {
     Http::fake();
@@ -118,7 +119,7 @@ test('conversation persistence', function () {
 test('tool calling', function () {
     $ai = new OpenAI();
 
-    $weatherTool = new class {
+    $weatherTool = new class implements Tool {
         public function name(): string
         {
             return 'weather';
@@ -144,9 +145,7 @@ test('tool calling', function () {
     };
 
     $response = $ai->ask('What is the weather in New York?', [
-        'tools' => [
-            $weatherTool,
-        ]
+        'tools' => [$weatherTool],
     ]);
 
     expect($response)->toBe('60 degrees and sunny.');

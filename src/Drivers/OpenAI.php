@@ -1,11 +1,14 @@
 <?php
 
-namespace Nexxtmove\Drivers;
+namespace Nexxtmove\AI\Drivers;
 
+use Exception;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Nexxtmove\AI\Tool;
 
-class OpenAI implements AIDriver
+class OpenAI extends AIDriver
 {
     private PendingRequest $http;
 
@@ -15,19 +18,70 @@ class OpenAI implements AIDriver
             ->withToken(config('ai.openai.api_key'));
     }
 
-    public function ask(string $prompt): ?string
+    protected function callTool(array $availableTools, string $toolName, array $parameters): string
     {
-        $model = config('ai.model') ?: 'gpt-3.5-turbo';
+        $tool = collect($availableTools)->first(fn(Tool $t) => $t->name() === $toolName);
 
-        $response = $this->http->post('chat/completions', [
-            'model' => $model,
-            'messages' => [
-                ['role' => 'user', 'content' => $prompt],
-            ],
-        ]);
+        if (!$tool) {
+            throw new Exception("Tool not found: $toolName");
+        }
 
-        $response->throw();
+        return $tool->call($parameters);
+    }
 
-        return $response->json('choices.0.message.content');
+    protected function formatTool(Tool $tool): array
+    {
+        return [
+            'type' => 'function',
+            'name' => $tool->name(),
+            'description' => $tool->description(),
+            'parameters' => $tool->parameters(),
+        ];
+    }
+
+    public function ask(string $prompt, array $options = []): string
+    {
+        $model = $options['model'] ?? config('ai.openai.default_model');
+        $tools = $options['tools'] ?? [];
+
+        if (!$model) {
+            throw new Exception('Model is not specified.');
+        }
+
+        $messages = [
+            ['role' => 'user', 'content' => $prompt],
+        ];
+
+        while (true) {
+            $data = [
+                'model' => $model,
+                'input' => $messages,
+                'tools' => array_map(fn(Tool $tool) => $this->formatTool($tool), $tools),
+            ];
+
+            $response = $this->http->post('responses', $data);
+
+            $response->throw();
+
+            $responseData = $response->json();
+            $output = $responseData['output'][0];
+
+            // Tool call handling
+            if ($output['type'] === 'function_call' && $output['status'] === 'completed') {
+                $toolParameters = json_decode($output['arguments'], true);
+                $toolResult = $this->callTool($tools, $output['name'], $toolParameters);
+
+                $messages[] = $output;
+                $messages[] = [
+                    'type' => 'function_call_output',
+                    'call_id' => $output['call_id'],
+                    'output' => $toolResult,
+                ];
+
+                continue;
+            }
+
+            return $responseData['output'][0]['content'][0]['text'];
+        }
     }
 }

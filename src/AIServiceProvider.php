@@ -1,11 +1,11 @@
 <?php
 
-namespace Nexxtmove;
+namespace Nexxtmove\AI;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
-use Nexxtmove\Drivers\AIDriver;
-use Nexxtmove\Drivers\OpenAI;
+use Nexxtmove\AI\Drivers\AIDriver;
+use Nexxtmove\AI\Drivers\OpenAI;
 
 class AIServiceProvider extends ServiceProvider
 {

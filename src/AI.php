@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexxtmove;
+namespace Nexxtmove\AI;
 
 use Illuminate\Support\Facades\Facade;
 use Nexxtmove\Drivers\AIDriver;

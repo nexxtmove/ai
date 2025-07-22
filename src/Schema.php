@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexxtmove;
+namespace Nexxtmove\AI;
 
 class Schema
 {
