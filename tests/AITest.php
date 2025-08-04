@@ -7,10 +7,6 @@ use Prism\Prism\Prism;
 use Prism\Prism\Testing\TextResponseFake;
 
 beforeEach(function () {
-    // Default fake response for Prism
-    Prism::fake([TextResponseFake::make()]);
-
-    // Default provider/model
     Config::set('ai.default_provider', 'openai');
     Config::set('ai.default_model', 'gpt-4o');
 });
@@ -26,23 +22,37 @@ test('require model', function () {
 })->throws(Exception::class, 'Model is not set.');
 
 test('load default provider and model', function () {
+    $fake = Prism::fake([TextResponseFake::make()]);
+
     AI::ask('...')->get();
-})->throwsNoExceptions();
+
+    $fake->assertRequest(function ($requests) {
+        expect($requests[0]->provider())->toBe('openai');
+        expect($requests[0]->model())->toBe('gpt-4o');
+    });
+});
 
 test('specify provider and model', function () {
-    Config::set('ai.default_provider', null);
-    Config::set('ai.default_model', null);
+    $fake = Prism::fake([TextResponseFake::make()]);
 
     AI::ask('...')
         ->using(Provider::Gemini, 'gemini-2.0-flash')
         ->get();
-})->throwsNoExceptions();
+
+    $fake->assertRequest(function ($requests) {
+        expect($requests[0]->provider())->toBe('gemini');
+        expect($requests[0]->model())->toBe('gemini-2.0-flash');
+    });
+});
 
 test('simple question', function () {
-    $fakeResponse = TextResponseFake::make()->withText('2');
-    Prism::fake([$fakeResponse]);
+    $fake = Prism::fake([
+        TextResponseFake::make()->withText('2')
+    ]);
 
     $result = AI::ask('What is 1+1?')->get();
 
     expect($result)->toBe('2');
+
+    $fake->assertPrompt('What is 1+1?');
 });
