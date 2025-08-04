@@ -3,7 +3,6 @@
 namespace Nexxtmove;
 
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 
@@ -17,7 +16,7 @@ class AI
 
     public static function ask(string $question)
     {
-        $self = new self();
+        $self = new self;
 
         $self->question = $question;
 
@@ -27,13 +26,21 @@ class AI
         return $self;
     }
 
+    public function using(Provider $provider, string $model): self
+    {
+        $this->provider = $provider;
+        $this->model = $model;
+
+        return $this;
+    }
+
     public function get()
     {
-        if (!$this->provider) {
+        if (! $this->provider) {
             throw new Exception('Provider is not set.');
         }
 
-        if (!$this->model) {
+        if (! $this->model) {
             throw new Exception('Model is not set.');
         }
 

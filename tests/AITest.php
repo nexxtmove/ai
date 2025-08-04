@@ -11,7 +11,7 @@ beforeEach(function () {
     Prism::fake([TextResponseFake::make()]);
 
     // Default provider/model
-    Config::set('ai.default_provider', Provider::OpenAI);
+    Config::set('ai.default_provider', 'openai');
     Config::set('ai.default_model', 'gpt-4o');
 });
 
@@ -27,6 +27,15 @@ test('require model', function () {
 
 test('load default provider and model', function () {
     AI::ask('...')->get();
+})->throwsNoExceptions();
+
+test('specify provider and model', function () {
+    Config::set('ai.default_provider', null);
+    Config::set('ai.default_model', null);
+
+    AI::ask('...')
+        ->using(Provider::Gemini, 'gemini-2.0-flash')
+        ->get();
 })->throwsNoExceptions();
 
 test('simple question', function () {
