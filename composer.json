@@ -2,8 +2,7 @@
     "name": "nexxtmove/ai",
     "license": "MIT",
     "require": {
-        "illuminate/support": "^12.21",
-        "illuminate/http": "^12.21"
+        "prism-php/prism": "*"
     },
     "require-dev": {
         "orchestra/testbench": "^10.4",

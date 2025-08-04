@@ -5,3 +5,14 @@
 ```bash
 composer require nexxtmove/ai
 ```
+
+## Usage
+
+```php
+AI::ask('How did we do last month?')
+    ->using(Provider::OpenAI, 'gpt-4o')
+    ->conversation($conversationModel)
+    ->tools(GetOrders::class, GetReturns::class)
+    ->output(SalesReport::class)
+    ->get();
+```
