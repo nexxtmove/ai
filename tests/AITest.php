@@ -11,17 +11,17 @@ beforeEach(function () {
     Config::set('ai.default_model', 'gpt-4o');
 });
 
-test('require provider', function () {
+it('requires a provider to be set', function () {
     Config::set('ai.default_provider', null);
     AI::ask('...')->get();
 })->throws(Exception::class, 'Provider is not set.');
 
-test('require model', function () {
+it('requires a model to be set', function () {
     Config::set('ai.default_model', null);
     AI::ask('...')->get();
 })->throws(Exception::class, 'Model is not set.');
 
-test('load default provider and model', function () {
+it('loads the default provider and model from config', function () {
     $fake = Prism::fake([TextResponseFake::make()]);
 
     AI::ask('...')->get();
@@ -32,7 +32,7 @@ test('load default provider and model', function () {
     });
 });
 
-test('specify provider and model', function () {
+it('allows to use a specific provider and model', function () {
     $fake = Prism::fake([TextResponseFake::make()]);
 
     AI::ask('...')
@@ -45,7 +45,7 @@ test('specify provider and model', function () {
     });
 });
 
-test('simple question', function () {
+it('can answer a question', function () {
     $fake = Prism::fake([
         TextResponseFake::make()->withText('2')
     ]);
