@@ -57,7 +57,7 @@ class OrderController extends Controller
 }
 ```
 
-> The `(...)` syntax shown here is called [first class callable syntax](https://www.php.net/manual/en/functions.first_class_callable_syntax.php).
+> The `(...)` syntax used here is [first class callable syntax](https://www.php.net/manual/en/functions.first_class_callable_syntax.php).
 
 ## Remember messages
 
