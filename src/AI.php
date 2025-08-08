@@ -10,9 +10,11 @@ class AI
 {
     private string $question;
 
-    private Provider|string|null $provider;
+    private Provider|string|null $provider = null;
 
-    private ?string $model;
+    private ?string $model = null;
+
+    private ?string $outputClass = null;
 
     public static function ask(string $question)
     {
@@ -34,6 +36,13 @@ class AI
         return $this;
     }
 
+    public function output(string $class): self
+    {
+        $this->outputClass = $class;
+
+        return $this;
+    }
+
     public function get()
     {
         if (! $this->provider) {
@@ -44,11 +53,22 @@ class AI
             throw new Exception('Model is not set.');
         }
 
-        $response = Prism::text()
-            ->using($this->provider, $this->model)
-            ->withPrompt($this->question)
-            ->asText();
+        $response = $this->outputClass ? Prism::structured() : Prism::text();
 
-        return $response->text;
+        $response = $response
+            ->using($this->provider, $this->model)
+            ->withPrompt($this->question);
+
+        if ($this->outputClass) {
+            $schema = OutputSchemaBuilder::build($this->outputClass);
+
+            $response = $response
+                ->withSchema($schema)
+                ->asStructured();
+
+            return $response->structured;
+        }
+
+        return $response->asText()->text;
     }
 }
