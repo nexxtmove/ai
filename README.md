@@ -47,7 +47,7 @@ class OrderController extends Controller
     {
         $allowedFunctions = [
             $this->orders->countByMonth(...),
-            $this->mailer->send(...)
+            $this->mailer->send(...),
         ];
 
         return AI::ask($request->prompt) // “How did we do this month?”
