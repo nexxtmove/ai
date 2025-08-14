@@ -36,6 +36,7 @@ class OutputSchemaBuilder
             name: $name ?? $reflected->getShortName(),
             description: 'Structured output for '.$reflected->getName(),
             properties: $propertySchemas,
+            requiredFields: array_map(fn ($schema) => $schema->name, $propertySchemas)
         );
     }
 

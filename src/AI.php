@@ -3,6 +3,7 @@
 namespace Nexxtmove;
 
 use Exception;
+use Prism\Prism\Contracts\Schema;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use ReflectionClass;
@@ -16,9 +17,13 @@ class AI
 
     private ?string $model = null;
 
+    private ?Schema $rawSchema = null;
+
     private ?string $outputClass = null;
 
-    public static function ask(string $question)
+    private ?string $systemPrompt = null;
+
+    public static function ask(string $question): self
     {
         $self = new self;
 
@@ -45,6 +50,36 @@ class AI
         return $this;
     }
 
+    public function withSystemPrompt(string $prompt): self
+    {
+        $this->systemPrompt = $prompt;
+
+        return $this;
+    }
+
+    public function rawSchema(array $schema): self
+    {
+        $rawSchema = new class implements Schema
+        {
+            public array $schema;
+
+            public function name(): string
+            {
+                return 'raw_schema';
+            }
+
+            public function toArray(): array
+            {
+                return $this->schema;
+            }
+        };
+
+        $rawSchema->schema = $schema;
+        $this->rawSchema = $rawSchema;
+
+        return $this;
+    }
+
     public function get()
     {
         if (! $this->provider) {
@@ -55,11 +90,15 @@ class AI
             throw new Exception('Model is not set.');
         }
 
-        $response = $this->outputClass ? Prism::structured() : Prism::text();
+        $response = ($this->outputClass || $this->rawSchema) ? Prism::structured() : Prism::text();
 
         $response = $response
             ->using($this->provider, $this->model)
             ->withPrompt($this->question);
+
+        if ($this->systemPrompt) {
+            $response = $response->withSystemPrompt($this->systemPrompt);
+        }
 
         if ($this->outputClass) {
             $schema = OutputSchemaBuilder::build($this->outputClass);
@@ -69,6 +108,14 @@ class AI
                 ->asStructured();
 
             return $this->mapArrayToClass($response->structured, $this->outputClass);
+        }
+
+        if ($this->rawSchema) {
+            $response = $response
+                ->withSchema($this->rawSchema)
+                ->asStructured();
+
+            return $response->structured;
         }
 
         return $response->asText()->text;
