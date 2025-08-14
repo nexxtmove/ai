@@ -138,4 +138,35 @@ describe('structured output', function () {
             expect($properties['child']['properties']['name']['type'])->toBe('string');
         });
     });
+
+    it('handles deeply nested classes', function () {
+        class Level2
+        {
+            public string $name;
+        }
+
+        class Level1
+        {
+            public Level2 $child;
+        }
+
+        class TestDeepNested
+        {
+            public Level1 $child;
+        }
+
+        $fake = Prism::fake([StructuredResponseFake::make()]);
+
+        AI::ask('...')
+            ->output(TestDeepNested::class)
+            ->get();
+
+        $fake->assertRequest(function ($requests) {
+            $schema = $requests[0]->schema()->toArray();
+            $properties = $schema['properties'];
+
+            expect($properties['child']['type'])->toBe('object');
+            expect($properties['child']['properties']['child']['properties']['name']['type'])->toBe('string');
+        });
+    });
 });
