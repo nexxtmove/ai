@@ -19,6 +19,9 @@ class AI
 
     private ?Schema $rawSchema = null;
 
+    /** @var callable[] */
+    private array $functions = [];
+
     private ?string $outputClass = null;
 
     private ?string $systemPrompt = null;
@@ -53,6 +56,13 @@ class AI
     public function withSystemPrompt(string $prompt): self
     {
         $this->systemPrompt = $prompt;
+
+        return $this;
+    }
+
+    public function functions(array $functions): self
+    {
+        $this->functions = $functions;
 
         return $this;
     }
@@ -98,6 +108,14 @@ class AI
 
         if ($this->systemPrompt) {
             $response = $response->withSystemPrompt($this->systemPrompt);
+        }
+
+        if ($this->functions) {
+            $tools = [];
+            foreach ($this->functions as $function) {
+                $tools[] = FunctionToolBuilder::build($function);
+            }
+            $response = $response->withTools($tools);
         }
 
         if ($this->outputClass) {

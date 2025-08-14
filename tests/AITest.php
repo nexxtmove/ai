@@ -294,3 +294,57 @@ describe('structured output', function () {
         expect($result->weathers[2]->degrees)->toBe(28);
     });
 });
+
+describe('function calling', function () {
+    it('can call a PHP function', function () {
+        $fake = Prism::fake([TextResponseFake::make()]);
+
+        /**
+         * Sum two numbers.
+         */
+        function sum(int $a, int $b)
+        {
+            return $a + $b;
+        }
+
+        AI::ask('...')
+            ->functions([sum(...)])
+            ->get();
+
+        $fake->assertRequest(function ($requests) {
+            expect($requests[0]->tools())->toHaveCount(1);
+
+            $tool = $requests[0]->tools()[0];
+            expect($tool->name())->toBe('sum');
+            expect($tool->description())->toBe('Sum two numbers.');
+            expect($tool->parameters())->toHaveCount(2);
+            expect($tool->parameters()['a'])->toBeInstanceOf(\Prism\Prism\Schema\NumberSchema::class);
+            expect($tool->parameters()['b'])->toBeInstanceOf(\Prism\Prism\Schema\NumberSchema::class);
+            expect($tool->requiredParameters())->toBe(['a', 'b']);
+        });
+    });
+
+    it('can call a PHP function by name', function () {
+        $fake = Prism::fake([TextResponseFake::make()]);
+
+        function subtract(int $x, int $y)
+        {
+            return $x - $y;
+        }
+
+        AI::ask('...')
+            ->functions(['subtract'])
+            ->get();
+
+        $fake->assertRequest(function ($requests) {
+            expect($requests[0]->tools())->toHaveCount(1);
+
+            $tool = $requests[0]->tools()[0];
+            expect($tool->name())->toBe('subtract');
+            expect($tool->parameters())->toHaveCount(2);
+            expect($tool->parameters()['x'])->toBeInstanceOf(\Prism\Prism\Schema\NumberSchema::class);
+            expect($tool->parameters()['y'])->toBeInstanceOf(\Prism\Prism\Schema\NumberSchema::class);
+            expect($tool->requiredParameters())->toBe(['x', 'y']);
+        });
+    });
+});
