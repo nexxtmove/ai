@@ -5,6 +5,8 @@ namespace Nexxtmove;
 use Exception;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
+use ReflectionClass;
+use ReflectionProperty;
 
 class AI
 {
@@ -66,9 +68,38 @@ class AI
                 ->withSchema($schema)
                 ->asStructured();
 
-            return $response->structured;
+            return $this->mapArrayToClass($response->structured, $this->outputClass);
         }
 
         return $response->asText()->text;
+    }
+
+    private function mapArrayToClass(array $data, string $class): object
+    {
+        $reflectionClass = new ReflectionClass($class);
+        $instance = $reflectionClass->newInstanceWithoutConstructor();
+        $properties = $reflectionClass->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        foreach ($properties as $property) {
+            $propertyName = $property->getName();
+
+            if (! array_key_exists($propertyName, $data)) {
+                continue;
+            }
+
+            $value = $data[$propertyName];
+            $type = $property->getType();
+
+            if ($type && ! $type->isBuiltin() && class_exists($type->getName())) {
+                // Handle nested objects
+                if (is_array($value)) {
+                    $value = $this->mapArrayToClass($value, $type->getName());
+                }
+            }
+
+            $property->setValue($instance, $value);
+        }
+
+        return $instance;
     }
 }

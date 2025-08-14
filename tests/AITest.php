@@ -169,4 +169,29 @@ describe('structured output', function () {
             expect($properties['child']['properties']['child']['properties']['name']['type'])->toBe('string');
         });
     });
+
+    it('returns instance of output class', function () {
+        class Weather
+        {
+            public string $city;
+
+            public int $degrees;
+        }
+
+        $response = StructuredResponseFake::make()
+            ->withStructured([
+                'city' => 'New York',
+                'degrees' => 25,
+            ]);
+
+        Prism::fake([$response]);
+
+        $result = AI::ask('What\'s the weather in New York?')
+            ->output(Weather::class)
+            ->get();
+
+        expect($result)->toBeInstanceOf(Weather::class);
+        expect($result->city)->toBe('New York');
+        expect($result->degrees)->toBe(25);
+    });
 });
