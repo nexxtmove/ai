@@ -196,16 +196,9 @@ describe('structured output', function () {
     });
 
     it('returns nested class', function () {
-        class Weather2
-        {
-            public string $city;
-
-            public int $degrees;
-        }
-
         class Forecast
         {
-            public Weather2 $weather;
+            public Weather $weather;
         }
 
         $response = StructuredResponseFake::make()
@@ -223,8 +216,81 @@ describe('structured output', function () {
             ->get();
 
         expect($result)->toBeInstanceOf(Forecast::class);
-        expect($result->weather)->toBeInstanceOf(Weather2::class);
+        expect($result->weather)->toBeInstanceOf(Weather::class);
         expect($result->weather->city)->toBe('New York');
         expect($result->weather->degrees)->toBe(25);
+    });
+
+    it('returns nested class with string array', function () {
+        class TestStringArray1
+        {
+            /** @var string[] */
+            public array $cities;
+        }
+
+        $response = StructuredResponseFake::make()
+            ->withStructured([
+                'cities' => [
+                    'New York',
+                    'Los Angeles',
+                    'Chicago',
+                ],
+            ]);
+
+        Prism::fake([$response]);
+
+        $result = AI::ask('...')
+            ->output(TestStringArray1::class)
+            ->get();
+
+        expect($result)->toBeInstanceOf(TestStringArray1::class);
+        expect($result->cities)->toBe(['New York', 'Los Angeles', 'Chicago']);
+    });
+
+    it('returns array of nesteded classes', function () {
+        class ForecastMulti
+        {
+            /** @var Weather[] */
+            public array $weathers;
+        }
+
+        $response = StructuredResponseFake::make()
+            ->withStructured([
+                'weathers' => [
+                    [
+                        'city' => 'New York',
+                        'degrees' => 25,
+                    ],
+                    [
+                        'city' => 'Dallas',
+                        'degrees' => 30,
+                    ],
+                    [
+                        'city' => 'Houston',
+                        'degrees' => 28,
+                    ],
+                ],
+            ]);
+
+        Prism::fake([$response]);
+
+        $result = AI::ask('What is the weather in New York, Dallas and Houston?')
+            ->output(ForecastMulti::class)
+            ->get();
+
+        expect($result)->toBeInstanceOf(ForecastMulti::class);
+        expect($result->weathers)->toHaveLength(3);
+
+        expect($result->weathers[0])->toBeInstanceOf(Weather::class);
+        expect($result->weathers[0]->city)->toBe('New York');
+        expect($result->weathers[0]->degrees)->toBe(25);
+
+        expect($result->weathers[1])->toBeInstanceOf(Weather::class);
+        expect($result->weathers[1]->city)->toBe('Dallas');
+        expect($result->weathers[1]->degrees)->toBe(30);
+
+        expect($result->weathers[2])->toBeInstanceOf(Weather::class);
+        expect($result->weathers[2]->city)->toBe('Houston');
+        expect($result->weathers[2]->degrees)->toBe(28);
     });
 });

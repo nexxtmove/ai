@@ -90,7 +90,16 @@ class AI
             $value = $data[$propertyName];
             $type = $property->getType();
 
-            if ($type && ! $type->isBuiltin() && class_exists($type->getName())) {
+            if ($type && $type->getName() === 'array') {
+                // Handle arrays - check if it's an array of objects
+                $arrayItemType = $this->getArrayItemTypeFromDocComment($property);
+                if ($arrayItemType && class_exists($arrayItemType) && is_array($value)) {
+                    // Map each array element to the specified class
+                    $value = array_map(function ($item) use ($arrayItemType) {
+                        return is_array($item) ? $this->mapArrayToClass($item, $arrayItemType) : $item;
+                    }, $value);
+                }
+            } elseif ($type && ! $type->isBuiltin() && class_exists($type->getName())) {
                 // Handle nested objects
                 if (is_array($value)) {
                     $value = $this->mapArrayToClass($value, $type->getName());
@@ -101,5 +110,24 @@ class AI
         }
 
         return $instance;
+    }
+
+    /**
+     * Extract array item type from PHPDoc comment.
+     * For example: "Weather[]" -> "Weather", "string[]" -> "string"
+     */
+    private function getArrayItemTypeFromDocComment(ReflectionProperty $property): ?string
+    {
+        $docComment = $property->getDocComment();
+        if (! $docComment) {
+            return null;
+        }
+
+        // Match @var type annotations like Weather[] or string[]
+        if (preg_match('/@var\s+([^\s\[\]]+)\[\]/', $docComment, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }
