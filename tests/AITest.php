@@ -59,39 +59,83 @@ it('can answer a question', function () {
 });
 
 describe('structured output', function () {
-    function itHandles(string $type, string $outputClass, string $testProperty)
+    function itHandles(string $type, string $outputClass, string $testProperty, ?string $itemType = null)
     {
-        it("handles `{$type}` properties", function () use ($outputClass, $testProperty, $type) {
+        it("handles `{$outputClass}`", function () use ($outputClass, $testProperty, $type, $itemType) {
             $fake = Prism::fake([StructuredResponseFake::make()]);
 
             AI::ask('...')
                 ->output($outputClass)
                 ->get();
 
-            $fake->assertRequest(function ($requests) use ($testProperty, $type) {
+            $fake->assertRequest(function ($requests) use ($testProperty, $type, $itemType) {
                 $schema = $requests[0]->schema()->toArray();
                 $properties = $schema['properties'];
 
                 expect($properties[$testProperty]['type'])->toBe($type);
+
+                if ($itemType) {
+                    expect($properties[$testProperty]['items']['type'])->toBe($itemType);
+                }
             });
         });
     }
 
-    class Report
+    class TestNumber
     {
         public int $sales;
     }
-    itHandles('number', Report::class, 'sales');
+    itHandles('number', TestNumber::class, 'sales');
 
-    class Article
+    class TestString
     {
         public string $title;
     }
-    itHandles('string', Article::class, 'title');
+    itHandles('string', TestString::class, 'title');
 
-    class FeatureFlag
+    class TestBool
     {
         public bool $enabled;
     }
-    itHandles('boolean', FeatureFlag::class, 'enabled');
+    itHandles('boolean', TestBool::class, 'enabled');
+
+    class TestStringArray
+    {
+        /** @var string[] */
+        public array $list;
+    }
+    itHandles('array', TestStringArray::class, 'list', 'string');
+
+    class TestNumberArray
+    {
+        /** @var float[] */
+        public array $list;
+    }
+    itHandles('array', TestNumberArray::class, 'list', 'number');
+
+    it('handles nested classes', function () {
+        class Child
+        {
+            public string $name;
+        }
+
+        class TestNested
+        {
+            public Child $child;
+        }
+
+        $fake = Prism::fake([StructuredResponseFake::make()]);
+
+        AI::ask('...')
+            ->output(TestNested::class)
+            ->get();
+
+        $fake->assertRequest(function ($requests) {
+            $schema = $requests[0]->schema()->toArray();
+            $properties = $schema['properties'];
+
+            expect($properties['child']['type'])->toBe('object');
+            expect($properties['child']['properties']['name']['type'])->toBe('string');
+        });
+    });
 });

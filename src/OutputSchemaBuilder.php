@@ -3,6 +3,7 @@
 namespace Nexxtmove;
 
 use Prism\Prism\Contracts\Schema;
+use Prism\Prism\Schema\ArraySchema;
 use Prism\Prism\Schema\BooleanSchema;
 use Prism\Prism\Schema\NumberSchema;
 use Prism\Prism\Schema\ObjectSchema;
@@ -18,7 +19,7 @@ class OutputSchemaBuilder
     /**
      * Build an ObjectSchema based on the public properties of the provided class.
      */
-    public static function build(string $class): ObjectSchema
+    public static function build(string $class, ?string $name = null): ObjectSchema
     {
         $reflected = new ReflectionClass($class);
         $properties = $reflected->getProperties(ReflectionProperty::IS_PUBLIC);
@@ -32,7 +33,7 @@ class OutputSchemaBuilder
         }
 
         return new ObjectSchema(
-            name: $reflected->getShortName(),
+            name: $name ?? $reflected->getShortName(),
             description: 'Structured output for '.$reflected->getName(),
             properties: $propertySchemas,
         );
@@ -49,21 +50,66 @@ class OutputSchemaBuilder
         }
 
         $name = $property->getName();
+        $typeName = $type->getName();
 
-        switch ($type->getName()) {
+        if ($typeName === 'array') {
+            $itemType = self::getArrayItemTypeFromDocComment($property);
+            $items = $itemType ? self::schemaForType($itemType, 'item') : null;
+
+            return new ArraySchema(
+                $name,
+                description: '',
+                items: $items
+            );
+        }
+
+        return self::schemaForType($typeName, $name);
+    }
+
+    /**
+     * Extract array item type from PHPDoc comment.
+     * For example: "string[]" -> "string", "int[]" -> "int"
+     */
+    private static function getArrayItemTypeFromDocComment(ReflectionProperty $property): ?string
+    {
+        $docComment = $property->getDocComment();
+        if (! $docComment) {
+            return null;
+        }
+
+        // Match @var type annotations
+        if (preg_match('/@var\s+([^\s\[\]]+)\[\]/', $docComment, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Create a schema for a given type name.
+     */
+    private static function schemaForType(string $type, string $name): ?Schema
+    {
+        switch ($type) {
             case 'int':
+            case 'integer':
             case 'float':
-                return new NumberSchema($name, '');
+            case 'double':
+                return new NumberSchema($name, description: '');
 
             case 'string':
-                return new StringSchema($name, '');
+                return new StringSchema($name, description: '');
 
             case 'bool':
             case 'boolean':
-                return new BooleanSchema($name, '');
-
-            default:
-                return null; // Unsupported type
+                return new BooleanSchema($name, description: '');
         }
+
+        // Check if it's a custom class that we can build a schema for
+        if (class_exists($type)) {
+            return self::build($type, $name);
+        }
+
+        return null; // Unsupported type
     }
 }
